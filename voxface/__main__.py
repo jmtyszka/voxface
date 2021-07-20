@@ -55,6 +55,13 @@ def main():
     # Parse command line arguments
     args = parser.parse_args()
 
+    # Read version from setup.py
+    ver = pkg_resources.get_distribution('voxface').version
+
+    if args.version:
+        print('VOXFACE {}'.format(ver))
+        sys.exit(1)
+
     if args.infile:
         in_fname = os.path.realpath(args.infile)
     else:
@@ -65,13 +72,6 @@ def main():
         out_fname = os.path.realpath(args.outfile)
     else:
         out_fname = in_fname.replace('.nii.gz', '_defaced.nii.gz')
-
-    # Read version from setup.py
-    ver = pkg_resources.get_distribution('voxface').version
-
-    if args.version:
-        print('VOXFACE {}'.format(ver))
-        sys.exit(1)
 
     if args.verbose:
 
