@@ -147,7 +147,7 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         'antspyx>=0.2.4',
-        'scikit-learn==0.20.3'
+        'scikit-learn<0.21.0'
     ],  # Optional
 
     # List additional groups of dependencies here (e.g. development
