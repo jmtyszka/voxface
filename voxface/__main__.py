@@ -33,10 +33,10 @@ import os
 import sys
 import argparse
 import time
-
-import ants
 import pkg_resources
+
 import numpy as np
+import ants  # antspyx package
 
 
 def main():
