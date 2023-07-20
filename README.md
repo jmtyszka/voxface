@@ -6,7 +6,7 @@ deidentify the face while retaining some signal intensity to guide whole-head re
 ## Installation
 
 ### Latest Version
-2023.7.20
+2023.7.20.1
 
 ### GitHub Installation
 
