@@ -29,11 +29,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import os
+import os.path as op
 import sys
 import argparse
 import time
-import pkg_resources
+from importlib.metadata import version
+from importlib.resources import (files, as_file)
 
 import numpy as np
 import ants  # antspyx package
@@ -44,7 +45,6 @@ def main():
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Fast MRI face voxelator')
     parser.add_argument('-i', '--infile', help='Structural MRI with intact face')
-    parser.add_argument('-o', '--outfile', help="Defaced image filename")
     parser.add_argument('--voxdim', default=8.0, type=float,
                         help='Voxelation dimension in mm [8.0]')
     parser.add_argument('-v', '--verbose', action='store_true', default=False,
@@ -55,32 +55,34 @@ def main():
     # Parse command line arguments
     args = parser.parse_args()
 
-    # Read version from setup.py
-    ver = pkg_resources.get_distribution('voxface').version
+    # Package name
+    pack_name = 'voxface'
+
+    # Read version from package metadata
+    ver = version(pack_name)
 
     if args.version:
         print('VOXFACE {}'.format(ver))
         sys.exit(1)
 
     if args.infile:
-        in_fname = os.path.realpath(args.infile)
+        in_fname = op.realpath(args.infile)
     else:
         print('* No faced image provided - exiting')
         sys.exit(1)
 
-    if args.outfile:
-        out_fname = os.path.realpath(args.outfile)
-    else:
-        out_fname = in_fname.replace('.nii.gz', '_defaced.nii.gz')
+    # Backup filename for original faced image
+    # Original faced image is overwritten
+    bak_fname = in_fname.replace('.nii.gz', '_faced.nii.gz')
 
     if args.verbose:
 
         print('')
         print('Facial Voxelator {}'.format(ver))
         print('----------------')
-        print('Faced image     : {}'.format(in_fname))
-        print('Voxelated image : {}'.format(out_fname))
-        print('Voxelation size : {} mm'.format(args.voxdim))
+        print('New defaced image  : {}'.format(in_fname))
+        print('Faced backup image : {}'.format(bak_fname))
+        print('Voxelation size    : {} mm'.format(args.voxdim))
         print('')
 
     # Start timer
@@ -90,28 +92,22 @@ def main():
     if args.verbose:
         print('Loading faced image')
 
+    # Create and ANTs image object for the faced structural
     faced_ai = ants.image_read(in_fname)
 
-    # Load template image
-    t1_template_fname = pkg_resources.resource_filename(
-        'voxface',
-        os.path.join('templates', 'ConteCore2_50_T1w_2mm.nii.gz')
-    )
+    # Get a PosixPath for the package files
+    tpl_dir = op.join(files(pack_name), 'templates')
 
+    # Load template image
+    t1_template_fname = op.join(tpl_dir, 'ConteCore2_50_T1w_2mm.nii.gz')
     if args.verbose:
             print('Loading T1 template')
-
     template_ai = ants.image_read(t1_template_fname)
 
     # Load deface mask
-    facemask_fname = pkg_resources.resource_filename(
-        'voxface',
-        os.path.join('templates', 'ConteCore2_50_2mm_deface_mask.nii.gz')
-    )
-
+    facemask_fname = op.join(tpl_dir, 'ConteCore2_50_2mm_deface_mask.nii.gz')
     if args.verbose:
         print('Loading template facemask')
-
     facemask_ai = ants.image_read(facemask_fname)
 
     # Affine register template to faced image
@@ -172,11 +168,15 @@ def main():
     ones_ai = faced_ai.new_image_like(np.ones(faced_ai.shape))
     voxfaced_ai = faced_ai * ind_facemask_ai + voxed_ai * (ones_ai - ind_facemask_ai)
 
-    # Save face voxelated image
+    # Back up original image to "*_faced.nii.gz"
     if args.verbose:
-        print('Saving face voxelated image to {}'.format(out_fname))
+        print('Backing up original faced image to {}'.format(bak_fname))
+    faced_ai.to_filename(bak_fname)
 
-    voxfaced_ai.to_filename(out_fname)
+    # Overwrite original image with defaced/voxelated image
+    if args.verbose:
+        print('Overwriting {} with defaced/voxelated image'.format(in_fname))
+    voxfaced_ai.to_filename(in_fname)
 
     if args.verbose:
         toc = time.perf_counter()
