@@ -44,7 +44,7 @@ def main():
 
     # Parse command line arguments
     parser = argparse.ArgumentParser(description='Fast MRI face voxelator')
-    parser.add_argument('-i', '--infile', help='Structural MRI with intact face')
+    parser.add_argument('-i', '--infile', required=True, help='Structural MRI with intact face')
     parser.add_argument('--voxdim', default=8.0, type=float,
                         help='Voxelation dimension in mm [8.0]')
     parser.add_argument('-v', '--verbose', action='store_true', default=False,
