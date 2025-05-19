@@ -1,2 +1,2 @@
-setuptools~=72.1.0
+setuptools~=80.7.1
 numpy~=2.0.1
