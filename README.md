@@ -1,12 +1,11 @@
 # Voxface
-
 Fast voxelation of the face in 3D structural MRI data combining spline downsampling with nearest-neighbor upsampling to
 deidentify the face while retaining some signal intensity to guide whole-head registration.
 
-## Installation
-
 ### Latest Version
-2024.7.23
+2025.5.19
+
+## Installation
 
 ### GitHub Installation
 
@@ -26,6 +25,9 @@ deidentify the face while retaining some signal intensity to guide whole-head re
     ```
     % [sudo] pip3 install voxface
     ```
+
+## Usage
+
 
 ### Typical Performance
 Face voxelation of a typical 1 mm isotropic T1w image takes 5 - 6 seconds on a 3.2 GHz 6-Core Intel Core i7 Mac Mini.
